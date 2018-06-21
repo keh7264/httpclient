@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
 
 interface Todo {
   id: number;
@@ -34,12 +35,18 @@ export class AppComponent implements OnInit {
     const params = new HttpParams()
       .set('id', '1').set('completed', 'false');
 
-    this.http.get<Todo[]>(this.url, { headers, params })
-      .subscribe(todos => this.todos = todos);
+    // this.http.get<Todo[]>(this.url, { headers, params })
+    //   .subscribe(todos => this.todos = todos);
 
     // non-json data 요청시
     // this.http.get('/textfile.txt', { responseType: 'text' })
     //   .subscribe(data => console.log(data));
 
+    this.http.get<Todo[]>(this.url, { observe: 'response' })
+      .pipe(
+        tap(res => console.log(res)),
+        tap(res => console.log(res.headers)),
+        tap(res => console.log(res.status))
+      ).subscribe(todos => this.todos = todos.body);
   }
 }
