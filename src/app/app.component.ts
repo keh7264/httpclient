@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 
 interface Todo {
   id: number;
@@ -20,10 +20,21 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
 
+    const headers = new HttpHeaders()
+      .set('Content-type', 'application/json')
+      .set('Authorization', 'my-auth-token');
+
+    /* HttpHeaders 클래스는 아래의 방법도 유효하다.
+      const headers = new HttpHeaders({
+      'Content-Type':  'application/json',
+      'Authorization': 'my-auth-token'
+      });
+    */
+
     const params = new HttpParams()
       .set('id', '1').set('completed', 'false');
 
-    this.http.get<Todo[]>(this.url, { params })
+    this.http.get<Todo[]>(this.url, { headers, params })
       .subscribe(todos => this.todos = todos);
 
     // non-json data 요청시
