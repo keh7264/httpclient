@@ -1,11 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 interface Todo {
   id: number;
   content: string;
   completed: boolean;
+}
+
+interface ErrorMessage {
+  title: string;
+  message: string;
 }
 
 @Component({
@@ -15,7 +21,9 @@ interface Todo {
 })
 export class AppComponent implements OnInit {
   todos: Todo[];
-  url = 'http://localhost:3000/todos';
+  error: ErrorMessage;
+
+  url = 'http://localhost:3000/todosX';
 
   constructor(private http: HttpClient) { }
 
@@ -42,12 +50,30 @@ export class AppComponent implements OnInit {
     // this.http.get('/textfile.txt', { responseType: 'text' })
     //   .subscribe(data => console.log(data));
 
-    this.http.get<Todo[]>(this.url, { observe: 'response' })
+    this.http.get<Todo[]>(this.url)
       .pipe(
-        tap(res => console.log(res)),
-        tap(res => console.log(res.headers)),
-        tap(res => console.log(res.status))
-      ).subscribe(todos => this.todos = todos.body,
-        (error: HttpErrorResponse) => console.error(error));
+        catchError(this.handleError)
+      ).subscribe(
+        todos => this.todos = todos,
+        (error: ErrorMessage) => this.error = error);
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    let message = '';
+
+    if (error.error instanceof ErrorEvent) {
+      // 클라이언트 측의 에러
+      console.error(`Client-side error : ${error.error.message}`);
+      message = error.error.message;
+    } else {
+      // 백엔드 측의 에러
+      console.error(`Server-side error: ${error.status}`);
+      message = error.message;
+    }
+
+    return throwError({
+      title: 'Something wrong! please try again later.',
+      message
+    });
   }
 }
