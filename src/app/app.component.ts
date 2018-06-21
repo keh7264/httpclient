@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 interface Todo {
   id: number;
@@ -19,8 +19,16 @@ export class AppComponent implements OnInit {
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
-    this.http.get<Todo[]>(this.url)
+
+    const params = new HttpParams()
+      .set('id', '1').set('completed', 'false');
+
+    this.http.get<Todo[]>(this.url, { params })
       .subscribe(todos => this.todos = todos);
+
+    // non-json data 요청시
+    // this.http.get('/textfile.txt', { responseType: 'text' })
+    //   .subscribe(data => console.log(data));
 
   }
 }
