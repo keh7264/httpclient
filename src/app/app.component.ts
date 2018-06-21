@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 
 interface Todo {
@@ -47,6 +47,7 @@ export class AppComponent implements OnInit {
         tap(res => console.log(res)),
         tap(res => console.log(res.headers)),
         tap(res => console.log(res.status))
-      ).subscribe(todos => this.todos = todos.body);
+      ).subscribe(todos => this.todos = todos.body,
+        (error: HttpErrorResponse) => console.error(error));
   }
 }
