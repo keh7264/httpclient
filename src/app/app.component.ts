@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { throwError, Observable } from 'rxjs';
 
 interface Todo {
   id: number;
@@ -22,16 +22,18 @@ interface ErrorMessage {
 export class AppComponent implements OnInit {
   todos: Todo[];
   error: ErrorMessage;
+  content: string;
 
-  url = 'http://localhost:3000/todosX';
+  url = 'http://localhost:3000/todos';
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
+    this.getTodos().subscribe(todos => this.todos = todos);
 
-    const headers = new HttpHeaders()
-      .set('Content-type', 'application/json')
-      .set('Authorization', 'my-auth-token');
+    // const headers = new HttpHeaders()
+    //   .set('Content-type', 'application/json')
+    //   .set('Authorization', 'my-auth-token');
 
     /* HttpHeaders 클래스는 아래의 방법도 유효하다.
       const headers = new HttpHeaders({
@@ -40,8 +42,8 @@ export class AppComponent implements OnInit {
       });
     */
 
-    const params = new HttpParams()
-      .set('id', '1').set('completed', 'false');
+    // const params = new HttpParams()
+    //   .set('id', '1').set('completed', 'false');
 
     // this.http.get<Todo[]>(this.url, { headers, params })
     //   .subscribe(todos => this.todos = todos);
@@ -50,12 +52,29 @@ export class AppComponent implements OnInit {
     // this.http.get('/textfile.txt', { responseType: 'text' })
     //   .subscribe(data => console.log(data));
 
-    this.http.get<Todo[]>(this.url)
-      .pipe(
-        catchError(this.handleError)
-      ).subscribe(
-        todos => this.todos = todos,
-        (error: ErrorMessage) => this.error = error);
+    // this.http.get<Todo[]>(this.url)
+    //   .pipe(
+    //     catchError(this.handleError)
+    //   ).subscribe(
+    //     todos => this.todos = todos,
+    //     (error: ErrorMessage) => this.error = error);
+  }
+
+  add() {
+    if (!this.content) { return; }
+
+    this.addTodo().subscribe(todo => this.todos = [...this.todos, todo]);
+
+    this.content = '';
+  }
+
+  private getTodos(): Observable<Todo[]> {
+    return this.http.get<Todo[]>(this.url);
+  }
+
+  private addTodo(): Observable<Todo> {
+    const payload = { content: this.content, completed: false };
+    return this.http.post<Todo>(this.url, payload);
   }
 
   private handleError(error: HttpErrorResponse) {
